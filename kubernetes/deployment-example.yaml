@@ -20,7 +20,7 @@ spec:
         app: imgpush
     spec:
       containers:
-      - image: hauxir/imgpush:latest
+      - image: kamilkarkus/imgpush:latest
         name: imgpush
         ports:
         - containerPort: 5000
