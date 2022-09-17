@@ -4,8 +4,8 @@ import glob
 import os
 import random
 import string
-import urllib.request
 import uuid
+import requests
 
 import filetype
 import timeout_decorator
@@ -30,17 +30,19 @@ limiter = Limiter(app, key_func=get_remote_address, default_limits=[])
 
 app.use_x_sendfile = True
 
-
 if settings.NUDE_FILTER_MAX_THRESHOLD:
     from nudenet import NudeClassifier
+
     nude_classifier = NudeClassifier()
 else:
     nude_classifier = None
+
 
 @auth.verify_token
 def verify_token(token):
     if token == settings.BEARER_TOKEN:
         return 'user'
+
 
 @app.after_request
 def after_request(resp):
@@ -191,7 +193,7 @@ def upload_image():
         file = request.files["file"]
         file.save(tmp_filepath)
     elif "url" in request.json:
-        urllib.request.urlretrieve(request.json["url"], tmp_filepath)
+        download_image(request.json["url"], tmp_filepath, {"User-Agent": settings.USER_AGENT})
     else:
         return jsonify(error="File is missing!"), 400
 
@@ -230,6 +232,7 @@ def upload_image():
         return jsonify(error=error), 400
 
     return jsonify(filename=output_filename)
+
 
 @app.route("/<string:filename>", methods=["DELETE"])
 @auth.login_required
@@ -276,6 +279,15 @@ def get_image(filename):
         return send_from_directory(settings.CACHE_DIR, resized_filename)
 
     return send_from_directory(settings.IMAGES_DIR, filename)
+
+
+def download_image(url, file_name, headers):
+    response = requests.get(url, headers=headers)
+    if response.status_code == 200:
+        with open(file_name, "wb") as f:
+            f.write(response.content)
+    else:
+        print(response.status_code)
 
 
 if __name__ == "__main__":
