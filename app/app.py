@@ -280,6 +280,18 @@ def get_image(filename):
 
     return send_from_directory(settings.IMAGES_DIR, filename)
 
+@app.route("/list")
+@limiter.exempt
+def get_list():
+    path = settings.IMAGES_DIR
+    fun = lambda x: os.path.isfile(os.path.join(path, x))
+    files_list = filter(fun, os.listdir(path))
+
+    size_of_file = [
+        (f, os.stat(os.path.join(path, f)).st_size)
+        for f in files_list
+    ]
+    return jsonify(size_of_file)
 
 def download_image(url, file_name, headers):
     response = requests.get(url, headers=headers)
