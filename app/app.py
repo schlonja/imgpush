@@ -231,7 +231,10 @@ def upload_image():
     if error:
         return jsonify(error=error), 400
 
-    return jsonify(filename=output_filename)
+    return jsonify(
+        filename=output_filename,
+        size=os.stat(os.path.join(settings.IMAGES_DIR, output_filename)).st_size
+    )
 
 
 @app.route("/<string:filename>", methods=["DELETE"])
