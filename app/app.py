@@ -286,7 +286,9 @@ def get_list():
     path = settings.IMAGES_DIR
     fun = lambda x: os.path.isfile(os.path.join(path, x))
     files_list = filter(fun, os.listdir(path))
-
+    files_list = sorted(files_list, key=lambda x: os.stat(x).st_size)
+    n = max(5, request.args.get("n", 5))
+    files_list = files_list[0:n]
     size_of_file = [
         (f, os.stat(os.path.join(path, f)).st_size)
         for f in files_list
