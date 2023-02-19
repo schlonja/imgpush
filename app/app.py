@@ -193,7 +193,9 @@ def upload_image():
         file = request.files["file"]
         file.save(tmp_filepath)
     elif "url" in request.json:
-        download_image(request.json["url"], tmp_filepath, {"User-Agent": settings.USER_AGENT})
+        result = download_image(request.json["url"], tmp_filepath, {"User-Agent": settings.USER_AGENT})
+        if not result:
+            return jsonify(error="File is missing!"), 400
     else:
         return jsonify(error="File is missing!"), 400
 
@@ -298,12 +300,13 @@ def get_list():
     return jsonify(size_of_file)
 
 def download_image(url, file_name, headers):
-    response = requests.get(url, headers=headers)
-    if response.status_code == 200:
-        with open(file_name, "wb") as f:
-            f.write(response.content)
-    else:
-        print(response.status_code)
+  response = requests.get(url, headers=headers)
+  if response.status_code == 200:
+    with open(file_name, 'wb') as f:
+        f.write(response.content)
+    return True
+  else:
+    return False
 
 
 if __name__ == "__main__":
