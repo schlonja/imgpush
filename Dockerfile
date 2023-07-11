@@ -10,6 +10,7 @@ COPY nginx.conf /etc/nginx/conf.d/default.conf
 COPY ImageMagick-6/policy.xml /etc/ImageMagick-6/policy.xml
 
 RUN pip install -r requirements.txt
+RUN pip install requests
 
 RUN mkdir /images
 RUN mkdir /cache
